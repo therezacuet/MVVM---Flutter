@@ -1,13 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:mvvm_flutter_app/business_logic/models/currency.dart';
 import 'package:mvvm_flutter_app/business_logic/models/rate.dart';
-import 'package:mvvm_flutter_app/business_logic/utils/favorite_presentation.dart';
+import 'package:mvvm_flutter_app/business_logic/utils/iso_data.dart';
+import 'package:mvvm_flutter_app/services/currency/currency_service.dart';
+import 'package:mvvm_flutter_app/services/service_locator.dart';
 
-class ChooseFavoritesViewModel extends ChangeNotifier{
+class ChooseFavoritesViewModel extends ChangeNotifier {
   final CurrencyService _currencyService = serviceLocator<CurrencyService>();
 
   List<FavoritePresentation> _choices = [];
   List<Currency> _favorites = [];
+
   List<FavoritePresentation> get choices => _choices;
 
   void loadData() async {
@@ -41,16 +44,23 @@ class ChooseFavoritesViewModel extends ChangeNotifier{
   }
 
   void toggleFavoriteStatus(int choiceIndex) {
+
     final isFavorite = !_choices[choiceIndex].isFavorite;
     final code = _choices[choiceIndex].alphabeticCode;
+
+    // update display
     _choices[choiceIndex].isFavorite = isFavorite;
+
+    // update favorite list
     if (isFavorite) {
       _addToFavorites(code);
     } else {
       _removeFromFavorites(code);
     }
+
     notifyListeners();
   }
+
 
   void _addToFavorites(String alphabeticCode) {
     _favorites.add(Currency(alphabeticCode));
@@ -66,4 +76,14 @@ class ChooseFavoritesViewModel extends ChangeNotifier{
     }
     _currencyService.saveFavoriteCurrencies(_favorites);
   }
+}
+
+class FavoritePresentation {
+  final String flag;
+  final String alphabeticCode;
+  final String longName;
+  bool isFavorite;
+
+  FavoritePresentation(
+      {this.flag, this.alphabeticCode, this.longName, this.isFavorite,});
 }
